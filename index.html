@@ -282,7 +282,7 @@
     .obstacle-bird {
       position: absolute;
       right: -60px;
-      bottom: 120px;
+      bottom: 95px; /* 숙이지 않으면 무조건 부딪히도록 높이를 120px에서 95px로 대폭 교정 */
       width: 50px;
       height: 40px;
       background: transparent;
@@ -2779,9 +2779,11 @@
             clearInterval(moveTimer);
             spawnedObstacles = spawnedObstacles.filter(o => o.element !== obs);
             gameScore += 10;
-            if (gameScore >= 100 && gameScore < 300) gameSpeed = 8;
-            if (gameScore >= 300 && gameScore < 500) gameSpeed = 10;
-            if (gameScore >= 500) gameSpeed = 13;
+            
+            // 100포인트당 속도 +5 스케일링 공식 대입 (기본 속도 6, 최대 속도 50으로 조율)
+            const calculatedSpeed = 6 + Math.floor(gameScore / 100) * 5;
+            gameSpeed = Math.min(50, calculatedSpeed);
+            
             document.getElementById('game-score').innerText = "SCORE " + gameScore;
             document.getElementById('game-speed').innerText = "SPEED " + gameSpeed;
           }
