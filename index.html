@@ -1,0 +1,1874 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>달리기 야~호 - 공동 러닝 목표 대시보드</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome for Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts (Noto Sans KR & Poppins) -->
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+  <!-- Chart.js for beautiful line charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Canvas Confetti for Gorgeous Fireworks Effect -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  
+  <style>
+    /* 귀여운 달리는 사람 커스텀 마우스 커서 지정 */
+    body, button, a, select, input, label, textarea, option {
+      cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='28' height='28' viewBox='0 0 24 24' fill='%23f43f5e'><path d='M13.5 5.5c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zM9.8 8.9L7 21.5c-.1.4.2.8.6.9.1 0 .2 0 .3-.1l5.3-3.1 2.3 3.6c.2.3.5.4.8.4.2 0 .4-.1.6-.2.4-.3.5-.9.2-1.3l-2.4-3.8 1.8-3.4 3.7 2.2c.2.1.4.2.6.2.3 0 .7-.2.9-.5.3-.4.2-1-.2-1.3l-4.5-2.7c-.5-.3-1.1-.2-1.5.2L12 14.5l-1.6-4.3 2.1-1.3c.4-.2.6-.7.5-1.2l-.7-2.9C12.1 4.3 11.6 4 11 4H8c-.6 0-1 .4-1 1s.4 1 1 1h2.2l.4 1.6-3.8 2.3c-.4.2-.6.7-.5 1.2.1.4.5.7.9.7.1 0 .3 0 .4-.1l1.2-.7z'/></svg>") 12 12, auto !important;
+    }
+
+    body {
+      font-family: 'Noto Sans KR', 'Poppins', sans-serif;
+      transition: background-color 0.4s ease, color 0.4s ease;
+    }
+    
+    /* 한강 러닝 테마 역동적 배경 (다크모드용) */
+    .bg-running-overlay {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(30, 41, 59, 0.98) 100%),
+                  url('https://images.unsplash.com/photo-1502224562085-639556652f33?auto=format&fit=crop&w=1920&q=80') no-repeat center center/cover;
+    }
+
+    /* 라이트모드용 바깥틀 배경 - 깨끗한 그레이스케일 감성 */
+    .theme-light.bg-running-overlay {
+      background: #f8fafc !important;
+    }
+
+    /* 라이트모드 전역 스타일 오버라이드 */
+    .theme-light {
+      background-color: #f8fafc !important;
+      color: #0f172a;
+    }
+    .theme-light header {
+      background-color: rgba(255, 255, 255, 0.95) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05) !important;
+    }
+    .theme-light header h1, .theme-light header p {
+      color: #1e293b !important;
+    }
+    .theme-light .bg-card-custom {
+      background-color: rgba(255, 255, 255, 0.98) !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05) !important;
+    }
+    .theme-light .text-title-custom {
+      color: #0f172a !important;
+    }
+    .theme-light .text-desc-custom {
+      color: #475569 !important;
+    }
+    .theme-light .inner-card-custom {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    
+    .theme-light input,
+    .theme-light select,
+    .theme-light textarea {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #0f172a !important;
+    }
+    .theme-light input::placeholder {
+      color: #94a3b8 !important;
+    }
+
+    .theme-light #runners-list > div,
+    .theme-light #selected-date-runs > div {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    .theme-light .bg-slate-950\/20 {
+      background-color: rgba(241, 245, 249, 0.6) !important;
+    }
+    .theme-light .bg-slate-950\/50 {
+      background-color: #ffffff !important;
+      border-color: #e2e8f0 !important;
+    }
+    .theme-light .bg-slate-950\/80 {
+      background-color: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+
+    /* AI 링크북 및 그룹 설정 모달 관련 라이트모드 완벽 최적화 */
+    .theme-light #link-modal > div,
+    .theme-light #goal-edit-modal > div,
+    .theme-light #celebration-modal > div {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+    }
+    .theme-light #link-modal h3, 
+    .theme-light #link-modal h4,
+    .theme-light #goal-edit-modal h3,
+    .theme-light #celebration-modal h3 {
+      color: #0f172a !important;
+    }
+    .theme-light #link-modal p,
+    .theme-light #goal-edit-modal p,
+    .theme-light #celebration-modal p {
+      color: #475569 !important;
+    }
+    .theme-light #link-modal .bg-slate-950,
+    .theme-light #goal-edit-modal .bg-slate-950,
+    .theme-light #celebration-modal .bg-slate-950\/80 {
+      background-color: #f8fafc !important;
+      border-color: #cbd5e1 !important;
+    }
+    .theme-light #directory-container > div {
+      background-color: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+    .theme-light #directory-container > div .bg-slate-900\/80 {
+      background-color: #ffffff !important;
+      border-color: #cbd5e1 !important;
+    }
+    .theme-light #directory-container a {
+      color: #0f172a !important;
+    }
+    .theme-light #directory-container span {
+      color: #64748b !important;
+    }
+
+    /* 구겨져서 던져지는 애니메이션 */
+    @keyframes crumpleAndToss {
+      0% { transform: scale(1) rotate(0deg) translate(0, 0); opacity: 1; filter: blur(0px); }
+      30% { transform: scale(0.6) rotate(15deg) translate(0, -20px); border-radius: 50%; filter: contrast(1.5) brightness(0.9); }
+      100% { transform: scale(0) rotate(360deg) translate(200px, -600px); opacity: 0; filter: blur(8px); }
+    }
+
+    .crumple-active {
+      animation: crumpleAndToss 0.8s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+      pointer-events: none;
+    }
+
+    @keyframes sandTrickle {
+      0%, 100% { transform: translateY(0) scaleY(1); }
+      50% { transform: translateY(3px) scaleY(1.05); }
+    }
+    .sand-active {
+      animation: sandTrickle 1.5s infinite ease-in-out;
+    }
+
+    /* 커스텀 스크롤바 */
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    .theme-light ::-webkit-scrollbar-track {
+      background: #e2e8f0;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 3px;
+    }
+    .theme-light ::-webkit-scrollbar-thumb {
+      background: #cbd5e1;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #f43f5e;
+    }
+  
+    /* 러닝 미니게임 전용 스타일 */
+    #runner-game {
+      width: 800px;
+      height: 380px;
+      max-width: 100%;
+      background: linear-gradient(180deg, #1e1b4b, #311042);
+      border: 3px solid #f43f5e;
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+      margin: auto;
+      user-select: none;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    
+    #game-player {
+      position: absolute;
+      left: 100px;
+      bottom: 45px;
+      width: 50px;
+      height: 80px;
+      transition: transform 0.1s ease, bottom 0.1s ease;
+      z-index: 10;
+    }
+
+    .runner-sprite {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+    
+    .runner-head {
+      position: absolute;
+      top: 0;
+      left: 15px;
+      width: 18px;
+      height: 18px;
+      background: #f43f5e;
+      border-radius: 50%;
+      box-shadow: 0 0 10px rgba(244, 63, 94, 0.6);
+    }
+
+    .runner-body {
+      position: absolute;
+      top: 18px;
+      left: 20px;
+      width: 10px;
+      height: 32px;
+      background: #fb7185;
+      border-radius: 4px;
+    }
+
+    .runner-arm-front {
+      position: absolute;
+      top: 20px;
+      left: 22px;
+      width: 6px;
+      height: 20px;
+      background: #fda4af;
+      border-radius: 3px;
+      transform-origin: top center;
+      animation: runArm 0.6s infinite alternate;
+    }
+    .runner-arm-back {
+      position: absolute;
+      top: 20px;
+      left: 18px;
+      width: 6px;
+      height: 20px;
+      background: #f43f5e;
+      border-radius: 3px;
+      transform-origin: top center;
+      animation: runArmBack 0.6s infinite alternate;
+    }
+
+    .runner-leg-front {
+      position: absolute;
+      top: 48px;
+      left: 22px;
+      width: 8px;
+      height: 28px;
+      background: #fda4af;
+      border-radius: 4px;
+      transform-origin: top center;
+      animation: runLeg 0.6s infinite alternate;
+    }
+
+    .runner-leg-back {
+      position: absolute;
+      top: 48px;
+      left: 16px;
+      width: 8px;
+      height: 28px;
+      background: #f43f5e;
+      border-radius: 4px;
+      transform-origin: top center;
+      animation: runLegBack 0.6s infinite alternate;
+    }
+
+    @keyframes runLeg {
+      0% { transform: rotate(-35deg); }
+      100% { transform: rotate(40deg); }
+    }
+    @keyframes runLegBack {
+      0% { transform: rotate(35deg); }
+      100% { transform: rotate(-40deg); }
+    }
+    @keyframes runArm {
+      0% { transform: rotate(30deg); }
+      100% { transform: rotate(-30deg); }
+    }
+    @keyframes runArmBack {
+      0% { transform: rotate(-30deg); }
+      100% { transform: rotate(30deg); }
+    }
+
+    .ducking #game-player {
+      height: 45px;
+    }
+    .ducking .runner-body {
+      height: 15px;
+    }
+    .ducking .runner-leg-front, .ducking .runner-leg-back {
+      height: 14px;
+      top: 30px;
+    }
+
+    .obstacle-bird {
+      position: absolute;
+      right: -60px;
+      bottom: 110px;
+      width: 50px;
+      height: 40px;
+      background: transparent;
+      z-index: 9;
+    }
+    .bird-wing-left {
+      position: absolute;
+      width: 25px;
+      height: 12px;
+      background: #38bdf8;
+      border-radius: 50% 50% 0 0;
+      transform-origin: right bottom;
+      animation: flapLeft 0.3s infinite alternate;
+      left: 0;
+      top: 10px;
+    }
+    .bird-wing-right {
+      position: absolute;
+      width: 25px;
+      height: 12px;
+      background: #0ea5e9;
+      border-radius: 50% 50% 0 0;
+      transform-origin: left bottom;
+      animation: flapRight 0.3s infinite alternate;
+      right: 0;
+      top: 10px;
+    }
+    .bird-body {
+      position: absolute;
+      width: 20px;
+      height: 14px;
+      background: #e0f2fe;
+      border-radius: 50%;
+      left: 15px;
+      top: 12px;
+    }
+    @keyframes flapLeft {
+      0% { transform: rotate(-20deg); }
+      100% { transform: rotate(45deg); }
+    }
+    @keyframes flapRight {
+      0% { transform: rotate(20deg); }
+      100% { transform: rotate(-45deg); }
+    }
+
+    .obstacle-fire {
+      position: absolute;
+      right: -60px;
+      bottom: 45px;
+      width: 45px;
+      height: 50px;
+      background: transparent;
+      z-index: 9;
+    }
+    .fire-core {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(circle, #f97316 20%, #ef4444 60%, transparent 90%);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      animation: flicker 0.15s infinite alternate;
+    }
+    .fire-inner {
+      position: absolute;
+      width: 60%;
+      height: 60%;
+      left: 20%;
+      bottom: 0;
+      background: radial-gradient(circle, #eab308 30%, #f97316 80%);
+      clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+      animation: flicker 0.1s infinite alternate-reverse;
+    }
+    @keyframes flicker {
+      0% { transform: scaleX(0.95) scaleY(1.05) skewX(-2deg); }
+      100% { transform: scaleX(1.05) scaleY(0.95) skewX(2deg); }
+    }
+
+    .game-ground {
+      position: absolute;
+      bottom: 0;
+      width: 100%;
+      height: 45px;
+      background: linear-gradient(180deg, #475569 0%, #1e293b 100%);
+      border-top: 5px solid #22c55e;
+    }
+
+    .switch-checkbox {
+      display: none;
+    }
+    .switch-label {
+      cursor: pointer;
+      width: 62px;
+      height: 30px;
+      background: #475569;
+      display: flex;
+      align-items: center;
+      border-radius: 50px;
+      position: relative;
+      padding: 3px;
+      transition: background-color 0.3s;
+    }
+    .switch-button {
+      width: 24px;
+      height: 24px;
+      background: #ffffff;
+      border-radius: 50%;
+      position: absolute;
+      transition: transform 0.3s;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.25);
+    }
+    .switch-checkbox:checked + .switch-label {
+      background: #f43f5e;
+    }
+    .switch-checkbox:checked + .switch-label .switch-button {
+      transform: translateX(32px);
+    }
+  </style>
+</head>
+<body id="main-body" class="bg-running-overlay min-h-screen text-slate-100 flex flex-col justify-between antialiased pb-12">
+
+  <!-- [통일된 디자인과 코드로 작성된 프리미엄 네비게이션 바] -->
+  <header class="w-full bg-slate-900/90 backdrop-blur-md border-b border-slate-800 p-4 sticky top-0 z-40 transition-colors duration-300">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+      <!-- 로고 영역 -->
+      <div class="flex items-center gap-3">
+        <div class="bg-rose-500 p-2.5 rounded-2xl shadow-lg shadow-rose-500/30 animate-pulse">
+          <i class="fa-solid fa-person-running text-2xl text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-black tracking-tight text-white flex items-center gap-2 text-title-custom">
+            달리기 야~호 <span class="text-xs bg-rose-500/20 text-rose-400 font-semibold px-2 py-0.5 rounded-full border border-rose-500/30">러닝 커뮤니티</span>
+          </h1>
+          <p class="text-xs text-slate-400 text-desc-custom">상쾌한 바람을 맞으며, 함께 달리는 행복을 나눕시다.</p>
+        </div>
+      </div>
+      
+      <!-- 네비게이션 탭 -->
+      <nav class="flex items-center gap-2 bg-slate-950/60 p-1.5 rounded-2xl border border-slate-800/85">
+        <a href="index.html" id="nav-dashboard" class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 text-white bg-gradient-to-r from-rose-500 to-pink-500 shadow-md shadow-rose-500/20">
+          <i class="fa-solid fa-chart-line"></i> 공동 목표 대시보드
+        </a>
+        <a href="group_recruit.html" id="nav-recruit" class="px-5 py-2 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 text-slate-400 hover:text-white hover:bg-slate-900/50">
+          <i class="fa-solid fa-users"></i> 크루 그룹 모집방
+        </a>
+      </nav>
+
+      <!-- 부가 액션 및 테마 토글 -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-bold text-slate-400 text-desc-custom"><i class="fa-solid fa-sun text-amber-500"></i> OFF</span>
+          <div class="relative">
+            <input type="checkbox" id="theme-toggle" class="switch-checkbox" checked onchange="toggleThemeMode()">
+            <label for="theme-toggle" class="switch-label">
+              <span class="switch-button"></span>
+            </label>
+          </div>
+          <span class="text-xs font-bold text-slate-300 text-title-custom"><i class="fa-solid fa-moon text-indigo-400"></i> ON</span>
+        </div>
+
+        <button onclick="openLinkModal()" class="bg-slate-850 hover:bg-slate-800 text-slate-200 text-sm font-bold px-4 py-2 rounded-xl transition duration-300 flex items-center gap-2 border border-slate-700">
+          <i class="fa-solid fa-folder-open text-rose-400"></i> 러닝 링크북
+        </button>
+        <button onclick="confirmResetData()" class="bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 text-sm font-bold px-4 py-2 rounded-xl transition duration-300 border border-rose-500/30 flex items-center gap-1">
+          <i class="fa-solid fa-rotate-right"></i> 초기화
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 메인 콘텐츠 영역 -->
+  <main class="max-w-7xl w-full mx-auto p-4 md:p-6 lg:p-8 flex-grow grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- 1. 좌측 영역: 참여자 기록 및 랭킹 (lg:col-span-4) -->
+    <section class="lg:col-span-4 w-full flex flex-col gap-6">
+      
+      <!-- 참여자 현황 카드 -->
+      <div class="w-full bg-slate-900/80 backdrop-blur-lg border border-slate-800 rounded-3xl p-6 shadow-xl bg-card-custom">
+        <div class="flex items-center justify-between mb-5 border-b border-slate-800 pb-3">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-rose-400 text-title-custom">
+            <i class="fa-solid fa-trophy"></i> 참여 크루 주자 현황
+          </h2>
+          <span class="text-xs text-slate-400 font-mono text-desc-custom" id="participant-count">0명 달리는 중</span>
+        </div>
+
+        <!-- 신규 참여자 추가 폼 -->
+        <form id="add-runner-form" class="mb-5 flex gap-2">
+          <input type="text" id="runner-name" placeholder="참여 러너 이름 기입" required 
+            class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-rose-500 flex-grow text-white placeholder-slate-500">
+          <button type="submit" class="bg-rose-500 hover:bg-rose-600 active:scale-95 text-white text-sm font-bold px-4 py-2 rounded-xl transition duration-150 whitespace-nowrap">
+            주자 합류
+          </button>
+        </form>
+
+        <!-- 참여자 리스트 -->
+        <div class="space-y-3 max-h-[280px] overflow-y-auto pr-1" id="runners-list">
+          <!-- JS로 동적 삽입됨 -->
+        </div>
+      </div>
+
+      <!-- 날짜별 러닝 현황 캘린더 -->
+      <div class="w-full bg-slate-900/80 backdrop-blur-lg border border-slate-800 rounded-3xl p-6 shadow-xl bg-card-custom">
+        <div class="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+          <h2 class="text-lg font-bold flex items-center gap-2 text-orange-400 text-title-custom">
+            <i class="fa-regular fa-calendar-check"></i> 러닝 현황 캘린더
+          </h2>
+          <span class="text-xs text-slate-400 font-mono text-desc-custom" id="calendar-month-year">2026.07</span>
+        </div>
+
+        <div class="flex justify-between items-center mb-3">
+          <button onclick="changeMonth(-1)" class="text-slate-400 hover:text-white px-2 py-1 bg-slate-800/50 rounded-lg text-xs transition text-desc-custom">
+            <i class="fa-solid fa-chevron-left"></i> 이전 달
+          </button>
+          <span id="calendar-current-view" class="text-sm font-bold font-mono text-title-custom">2026년 7월</span>
+          <button onclick="changeMonth(1)" class="text-slate-400 hover:text-white px-2 py-1 bg-slate-800/50 rounded-lg text-xs transition text-desc-custom">
+            다음 달 <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
+
+        <div class="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 mb-2">
+          <div class="text-rose-500">일</div>
+          <div>월</div>
+          <div>화</div>
+          <div>수</div>
+          <div>목</div>
+          <div>금</div>
+          <div class="text-blue-400">토</div>
+        </div>
+        
+        <div id="calendar-days-grid" class="grid grid-cols-7 gap-1">
+          <!-- JS에서 날짜가 채워짐 -->
+        </div>
+
+        <!-- 선택한 날짜의 세부 러닝 기록 -->
+        <div class="mt-4 pt-3 border-t border-slate-800" id="selected-day-log-box">
+          <h3 class="text-xs font-bold text-slate-400 mb-2 flex items-center justify-between text-desc-custom">
+            <span>📅 <span id="selected-date-str">날짜를 선택하세요</span>의 상세 기록</span>
+            <span class="text-[10px] text-orange-400 font-mono" id="selected-date-sum">0 km</span>
+          </h3>
+          <div id="selected-date-runs" class="space-y-1.5 text-xs max-h-[120px] overflow-y-auto">
+            <div class="text-slate-500 text-center py-2">기록이 없습니다. 달리기를 등록하세요!</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- 2. 우측 영역: 목표 달성 시각화 및 입력 (lg:col-span-8) -->
+    <section class="lg:col-span-8 w-full flex flex-col gap-6">
+      
+      <!-- 운동장 트랙 & 메인 게이지 판넬 -->
+      <div class="bg-slate-900/80 backdrop-blur-lg border border-slate-800 rounded-3xl p-6 shadow-xl flex flex-col items-center relative overflow-hidden bg-card-custom">
+        
+        <!-- 상단 목표 정보 및 수정 트리거 -->
+        <div class="w-full text-center z-10 space-y-2">
+          <div class="inline-block bg-rose-500/10 text-rose-400 font-bold px-4 py-1.5 rounded-full text-xs uppercase tracking-wider border border-rose-500/20">
+            Active Tracking Group Stadium
+          </div>
+          <h2 class="text-2xl md:text-3xl font-black text-white flex flex-wrap items-center justify-center gap-2 text-title-custom">
+            <span id="group-name-display" class="text-rose-400">불러오는 중...</span>
+            <span id="goal-title-display" class="font-bold text-slate-100">공동 목표 로딩하기</span>
+            <button onclick="openGoalEditModal()" class="text-xs bg-slate-800/80 hover:bg-slate-700 active:scale-95 text-slate-300 font-bold px-3 py-1.5 rounded-xl border border-slate-700 flex items-center gap-1.5 transition duration-150">
+              <i class="fa-solid fa-pen-to-square text-rose-400"></i> 설정 변경
+              <span id="badge-edit-count" class="text-[10px] bg-rose-500/20 text-rose-400 border border-rose-500/30 px-2 py-0.5 rounded-full font-black">2회 가능</span>
+            </button>
+          </h2>
+          <p class="text-xs md:text-sm text-slate-400 text-desc-custom">크루 그룹 모집방에서 '추적하기'를 누른 활성 러닝그룹의 목표 수치 및 달성도입니다.</p>
+        </div>
+
+        <!-- 메인 시각화: 원형 그래프 & 모래시계 디자인 -->
+        <div class="my-10 flex flex-col md:flex-row items-center justify-center gap-12 w-full max-w-xl z-10">
+          
+          <!-- 도넛형 원형 그래프 -->
+          <div class="relative w-52 h-52 flex items-center justify-center bg-slate-950/50 rounded-full p-2 border border-slate-800/80 shadow-2xl inner-card-custom">
+            <svg class="w-full h-full transform -rotate-90" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="80" stroke="#1e293b" stroke-width="16" fill="transparent" stroke-linecap="round" />
+              <circle cx="100" cy="100" r="80" stroke="#f43f5e" stroke-width="16" fill="transparent" stroke-linecap="round"
+                stroke-dasharray="502.65" stroke-dashoffset="502.65" id="progress-circle" class="transition-all duration-1000 ease-out" />
+            </svg>
+            <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+              <span class="text-sm text-rose-400 font-extrabold tracking-widest uppercase">달성도</span>
+              <span class="text-4xl font-black font-mono text-white tracking-tight my-1 text-title-custom" id="progress-percent">0%</span>
+              <div class="text-[11px] text-slate-400 bg-slate-900 px-2.5 py-0.5 rounded-full border border-slate-800 font-mono text-desc-custom" id="donut-current-km">0 / 1000 km</div>
+            </div>
+          </div>
+
+          <!-- 모래시계 게이지 시각화 -->
+          <div class="flex flex-col items-center bg-slate-950/50 p-5 rounded-2xl border border-slate-800/80 w-44 inner-card-custom">
+            <div class="text-xs text-slate-400 font-semibold mb-3 flex items-center gap-1 text-desc-custom">
+              <i class="fa-regular fa-hourglass-half text-rose-400"></i> 시간 누적 모래시계
+            </div>
+            
+            <div class="relative w-20 h-28 flex flex-col justify-between items-center">
+              <div class="absolute inset-0 border-2 border-slate-600 rounded-lg pointer-events-none"></div>
+              
+              <div class="w-16 h-12 bg-slate-800/50 rounded-b-full border-b border-slate-700 overflow-hidden relative">
+                <div id="sand-top" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-rose-500 to-rose-400 transition-all duration-1000" style="height: 100%;"></div>
+              </div>
+              
+              <div class="w-2 h-4 bg-slate-700 relative z-10 flex items-center justify-center">
+                <div id="sand-stream" class="w-0.5 h-full bg-rose-400 hidden sand-active"></div>
+              </div>
+              
+              <div class="w-20 h-14 bg-slate-800/50 rounded-t-[50%] border-t border-slate-700 overflow-hidden relative">
+                <div id="sand-bottom" class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-rose-600 to-rose-500 transition-all duration-1000" style="height: 0%;"></div>
+              </div>
+            </div>
+
+            <div class="mt-4 text-center">
+              <div class="text-xs text-slate-500 font-bold text-desc-custom">누적 돌파 기록</div>
+              <div class="text-lg font-black text-white font-mono text-title-custom" id="current-km-display">0 km</div>
+              <div class="text-[10px] text-slate-400 text-desc-custom" id="goal-target-display">목표: 1,000 km</div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- 운동장 트랙 디자인 요소 -->
+        <div class="w-full mt-4 p-4 border-t-2 border-dashed border-slate-800 flex items-center justify-between text-xs text-slate-500">
+          <span class="flex items-center gap-1"><i class="fa-solid fa-flag-checkered"></i> TRACK START</span>
+          <div class="flex-grow mx-4 h-1.5 bg-slate-950 rounded-full overflow-hidden relative">
+            <div id="track-indicator" class="h-full bg-gradient-to-r from-rose-600 to-rose-400 transition-all duration-1000" style="width: 0%"></div>
+          </div>
+          <span class="flex items-center gap-1">GOAL <i class="fa-solid fa-medal text-yellow-500"></i></span>
+        </div>
+
+      </div>
+
+      <!-- km 수 기입 & 게이지 채우기 입력 폼 -->
+      <div class="bg-slate-900/80 backdrop-blur-lg border border-slate-800 rounded-3xl p-6 shadow-xl bg-card-custom">
+        <h3 class="text-base font-bold text-slate-200 mb-4 flex items-center gap-2 text-title-custom">
+          <i class="fa-solid fa-pen-to-square text-rose-400"></i> 오늘의 크루 러닝 기록 등록하기
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+          <!-- 러너 선택 -->
+          <div class="md:col-span-3 flex flex-col gap-1">
+            <label class="text-xs text-slate-400 font-bold text-desc-custom">러너 선택</label>
+            <select id="record-runner-select" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-rose-500 text-white">
+              <!-- 주자들이 동적으로 로드됨 -->
+            </select>
+          </div>
+
+          <!-- 러닝 일자 선택 -->
+          <div class="md:col-span-3 flex flex-col gap-1">
+            <label class="text-xs text-slate-400 font-bold text-desc-custom">러닝 날짜</label>
+            <input type="date" id="record-date-input" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-3 text-sm focus:outline-none focus:border-rose-500 text-white">
+          </div>
+
+          <!-- km 입력 -->
+          <div class="md:col-span-3 flex flex-col gap-1">
+            <label class="text-xs text-slate-400 font-bold text-desc-custom">거리 입력 (km)</label>
+            <div class="relative">
+              <input type="number" id="record-km-input" placeholder="0.0" step="0.1" min="0.1" required
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl pl-3 pr-12 py-3 text-sm focus:outline-none focus:border-rose-500 text-white font-mono font-bold">
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500 font-mono">KM</span>
+            </div>
+          </div>
+
+          <!-- 입력 버튼 -->
+          <div class="md:col-span-3 flex items-end">
+            <button onclick="addRunningRecord()" class="w-full bg-rose-500 hover:bg-rose-600 active:scale-98 text-white font-bold py-3.5 px-4 rounded-xl shadow-lg shadow-rose-500/20 transition duration-150 flex items-center justify-center gap-2">
+              <i class="fa-solid fa-plus"></i> 기록 적용
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 주자별 누적 러닝 페이스 그래프 -->
+      <div class="bg-slate-900/80 backdrop-blur-lg border border-slate-800 rounded-3xl p-6 shadow-xl bg-card-custom">
+        <h3 class="text-base font-bold text-slate-200 mb-4 flex items-center justify-between text-title-custom">
+          <span class="flex items-center gap-2">
+            <i class="fa-solid fa-chart-line text-rose-400"></i> 주자별 일일 누적 페이스 (km)
+          </span>
+          <span class="text-[10px] md:text-xs text-slate-400 font-normal text-desc-custom">날짜별 누적 거리 추이</span>
+        </h3>
+        <div class="w-full h-64 md:h-80 relative">
+          <canvas id="cumulative-pace-chart"></canvas>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- 러닝 미니게임 -->
+  <section class="w-full max-w-7xl mx-auto px-4 pb-10">
+    <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-xl bg-card-custom">
+      <div class="flex flex-col md:flex-row md:items-center justify-between mb-4">
+        <div>
+          <h2 class="text-xl font-black text-rose-400 mb-1 text-title-custom">
+            🏃 런런런 미니게임
+          </h2>
+          <p class="text-sm text-slate-400 text-desc-custom">
+            키보드 : <strong class="text-rose-400">SPACE</strong> 점프 / <strong class="text-rose-400">↓ (아래방향키)</strong> 숙이기 | 속도가 점차 빨라집니다!
+          </p>
+        </div>
+        <div class="mt-2 md:mt-0 bg-slate-950/80 px-4 py-2 rounded-2xl border border-slate-800 flex items-center gap-3 inner-card-custom">
+          <i class="fa-solid fa-gamepad text-rose-500 animate-pulse"></i>
+          <span class="text-xs font-bold">오늘 남은 도전 기회: <span id="game-chances-display" class="text-sm text-rose-400 font-mono font-black">2</span> / 2회</span>
+        </div>
+      </div>
+
+      <div id="runner-game" class="relative">
+        <div id="game-score" class="absolute top-5 left-5 text-white font-black text-xl drop-shadow-md z-20">SCORE 0</div>
+        <div id="game-speed" class="absolute top-5 right-5 text-rose-400 font-bold drop-shadow-md z-20">SPEED 6</div>
+        
+        <div id="game-start-overlay" class="absolute inset-0 bg-black/85 backdrop-blur-md flex flex-col items-center justify-center z-30 p-6 text-center">
+          <div class="bg-rose-500/10 p-4 rounded-full border border-rose-500/30 mb-4 animate-bounce">
+            <i class="fa-solid fa-person-running text-5xl text-rose-500"></i>
+          </div>
+          <h3 id="overlay-title" class="text-2xl font-black text-white mb-2">런런런! 한강 트랙 서바이벌</h3>
+          <p id="overlay-desc" class="text-sm text-slate-400 max-w-md mb-6 leading-relaxed">
+            날아다니는 <strong>새 🦅 (숙여서 피하기)</strong>와 지상의 <strong>불꽃 🔥 (점프해서 피하기)</strong> 장애물을 타이밍에 맞춰 극복해 보세요!
+          </p>
+          
+          <div id="countdown-timer-box" class="hidden bg-slate-900/90 border border-slate-800 rounded-2xl px-6 py-4 mb-6">
+            <p class="text-xs text-rose-400 font-extrabold uppercase tracking-widest mb-1"><i class="fa-regular fa-clock"></i> 충전 대기 시간</p>
+            <div id="countdown-timer" class="text-2xl font-black text-white font-mono tracking-widest">00:00:00</div>
+          </div>
+
+          <button id="start-game-btn" onclick="requestStartGame()" class="bg-rose-500 hover:bg-rose-600 active:scale-95 text-white font-black text-lg px-8 py-4 rounded-2xl shadow-xl shadow-rose-500/20 transition duration-200 flex items-center gap-2">
+            <i class="fa-solid fa-circle-play text-xl"></i> 게임 시작하기
+          </button>
+        </div>
+
+        <div id="game-player">
+          <div class="runner-sprite">
+            <div class="runner-head"></div>
+            <div class="runner-body"></div>
+            <div class="runner-arm-back"></div>
+            <div class="runner-arm-front"></div>
+            <div class="runner-leg-back"></div>
+            <div class="runner-leg-front"></div>
+          </div>
+        </div>
+
+        <div class="game-ground"></div>
+      </div>
+
+      <div class="mt-4 flex justify-center gap-4">
+        <button id="mobile-jump-btn" class="bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-black px-6 py-3.5 rounded-2xl transition duration-150 flex items-center gap-2 text-sm shadow-md" style="-webkit-tap-highlight-color: transparent;">
+          <i class="fa-solid fa-chevron-up"></i> 점프 (Space)
+        </button>
+        <button id="mobile-duck-btn" class="bg-sky-600 hover:bg-sky-700 active:scale-95 text-white font-black px-6 py-3.5 rounded-2xl transition duration-150 flex items-center gap-2 text-sm shadow-md" style="-webkit-tap-highlight-color: transparent;">
+          <i class="fa-solid fa-chevron-down"></i> 숙이기 (↓)
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- 푸터 영역 -->
+  <footer class="w-full border-t border-slate-900 bg-slate-950/60 p-4 text-center text-xs text-slate-500 mt-10">
+    <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-3">
+      <span>© 2026 달리기 야~호. All rights reserved.</span>
+      <span class="flex items-center gap-2">
+        Made for Beautiful Running Hobbyists <i class="fa-solid fa-heart text-rose-500"></i>
+      </span>
+    </div>
+  </footer>
+
+  <!-- ==================== [자체 모던 웹 알림/확인 모달 창] ==================== -->
+  <div id="custom-alert-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl p-6 text-center">
+      <div id="alert-icon-wrapper" class="bg-rose-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20 text-rose-400">
+        <i id="alert-icon" class="fa-solid fa-circle-exclamation text-3xl"></i>
+      </div>
+      <h3 id="alert-title" class="text-lg font-black text-white mb-2">알림</h3>
+      <p id="alert-message" class="text-sm text-slate-400 mb-6 whitespace-pre-line"></p>
+      <div class="flex gap-2 justify-center">
+        <button id="alert-cancel-btn" onclick="closeAlertModal(false)" class="hidden bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2.5 rounded-xl transition text-sm">취소</button>
+        <button id="alert-confirm-btn" onclick="closeAlertModal(true)" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-6 py-2.5 rounded-xl transition text-sm">확인</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== [모달 2: 그룹 목표 및 이름 수정 모달] ==================== -->
+  <div id="goal-edit-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-6">
+      <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2 text-title-custom">
+          <i class="fa-solid fa-gear text-rose-500"></i> 크루 그룹 설정 변경
+        </h3>
+        <button onclick="closeGoalEditModal()" class="text-slate-400 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs text-slate-400 font-bold block mb-1 text-desc-custom">그룹명</label>
+          <input type="text" id="edit-group-name" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500">
+        </div>
+        <div>
+          <label class="text-xs text-slate-400 font-bold block mb-1 text-desc-custom">공동 목표 거리 (km)</label>
+          <input type="number" id="edit-goal-km" min="1" class="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-rose-500 font-mono font-bold">
+          <p class="text-[11px] text-rose-400 mt-1.5 font-bold" id="edit-count-display">수정 남은 횟수: 2회 / 2회</p>
+          <p class="text-[10px] text-slate-500 mt-0.5">※ 목표 km 수정은 최대 2회까지 허용되며, 데이터 저장소에 영구히 저장됩니다.</p>
+        </div>
+        <div class="pt-2 flex justify-end gap-2">
+          <button onclick="closeGoalEditModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold px-4 py-2 rounded-xl text-sm transition">취소</button>
+          <button onclick="saveGoalSettings()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold px-5 py-2 rounded-xl text-sm transition shadow-md">저장하기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== [모달 1: AI 러닝 링크 보관함] ==================== -->
+  <div id="link-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden shadow-2xl relative">
+      <div class="p-6 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-500/10 p-2 rounded-xl border border-blue-500/20">
+            <i class="fa-solid fa-robot text-blue-400"></i>
+          </div>
+          <div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-1.5">
+              AI 스마트 링크 북
+            </h3>
+            <p class="text-xs text-slate-400">러닝 코스, 기사, 장비 링크를 AI가 자동 디렉토리로 분류합니다.</p>
+          </div>
+        </div>
+        <button onclick="closeLinkModal()" class="text-slate-400 hover:text-white transition p-1">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="p-6 overflow-y-auto space-y-6 flex-grow">
+        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800/80 space-y-3">
+          <h4 class="text-xs font-extrabold text-blue-400 uppercase tracking-widest"><i class="fa-solid fa-link"></i> 새로운 러닝 정보 등록</h4>
+          <div class="space-y-3">
+            <div>
+              <input type="text" id="new-link-title" placeholder="링크 제목 (예: 한강 밤도깨비 코스 추천)" 
+                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 text-white placeholder-slate-500">
+            </div>
+            <div class="flex gap-2">
+              <input type="url" id="new-link-url" placeholder="https://example.com" 
+                class="w-full bg-slate-900 border border-slate-800 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-blue-500 text-white placeholder-slate-500 font-mono">
+              <button onclick="saveLinkWithAI()" id="ai-save-btn" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-bold px-5 rounded-xl transition duration-150 whitespace-nowrap text-sm flex items-center gap-1.5">
+                <i class="fa-solid fa-wand-magic-sparkles"></i> AI 분류 저장
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-4" id="directory-container">
+          <!-- JS로 카테고리별 디렉토리 및 링크 리스트가 로딩됩니다. -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== [모달 3: 목표 달성 축하 대형 팝업 모달] ==================== -->
+  <div id="celebration-modal" class="fixed inset-0 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 z-50 hidden">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl p-8 text-center relative transition-colors duration-300">
+      <div class="text-6xl text-amber-400 mb-4 animate-bounce">
+        <i class="fa-solid fa-crown"></i>
+      </div>
+      <h3 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-orange-500 to-rose-500 mb-2">
+        축하합니다!🎉
+      </h3>
+      <p class="text-lg font-bold text-slate-100 mb-6 leading-relaxed text-title-custom">
+        목표한 km 수를 달성하셨습니다!
+      </p>
+      <div class="bg-slate-950/80 rounded-2xl p-4 border border-slate-800 mb-6 inner-card-custom">
+        <p class="text-xs text-slate-400 uppercase tracking-widest mb-1 text-desc-custom">최종 달성 기록</p>
+        <p id="celebration-km-display" class="text-2xl font-black text-rose-400 font-mono">0 / 0 km</p>
+        <p class="text-[11px] text-slate-500 mt-1 text-desc-custom">우리 크루원들의 열정적인 러닝 레이스가 마침내 완주에 성공했습니다!</p>
+      </div>
+      <button onclick="closeCelebrationModal()" class="w-full bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-600 hover:to-rose-600 active:scale-95 text-white font-extrabold py-3.5 px-6 rounded-xl transition shadow-lg shadow-rose-500/20 text-sm">
+        신나게 계속 달리기 🏃
+      </button>
+    </div>
+  </div>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-slate-800 text-white px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-3 transition-all duration-300 transform translate-y-20 opacity-0 pointer-events-none z-50">
+    <div id="toast-icon-bg" class="bg-rose-500/10 p-1.5 rounded-lg border border-rose-500/20 text-rose-400">
+      <i id="toast-icon" class="fa-solid fa-check"></i>
+    </div>
+    <span id="toast-msg" class="text-sm font-semibold">메시지 내용</span>
+  </div>
+
+
+  <!-- ==================== [JavaScript 프로그래밍 시작] ==================== -->
+  <script>
+    const STORAGE_KEY_STATE = 'RUNNING_APP_STATE_V3';
+    const RECRUIT_GROUPS_KEY = 'RUNNING_RECRUIT_GROUPS_V3';
+
+    // 기본 최초 예시 모집 그룹 목록 데이터 (광주광역시 거점)
+    const initialGroupsList = [
+      {
+        id: 'group-r1',
+        title: "무등산 타이거 러너스",
+        region: "북구",
+        targetKm: 1000,
+        desc: "무등산 자락의 맑은 공기와 용봉초 인근 트랙 정복을 목표로 달리는 열정 크루!",
+        memberCount: 3,
+        hasJoined: true,
+        isActiveTracking: true,
+        goalEditCount: 0,
+        goalCelebrated: false,
+        runners: [
+          { id: 'runner-1', name: '김동규(나)' },
+          { id: 'runner-2', name: '이민수' },
+          { id: 'runner-3', name: '박소현' }
+        ],
+        runs: [
+          { id: 'run-1', runnerId: 'runner-1', runnerName: '김동규(나)', km: 12.5, date: '2026-07-01' },
+          { id: 'run-2', runnerId: 'runner-2', runnerName: '이민수', km: 8.0, date: '2026-07-02' },
+          { id: 'run-3', runnerId: 'runner-3', runnerName: '박소현', km: 10.0, date: '2026-07-03' }
+        ]
+      },
+      {
+        id: 'group-r2',
+        title: "광주천 바람소리 크루",
+        region: "동구",
+        targetKm: 600,
+        desc: "동구 문화전당 앞 분수대를 기점으로 영산강 합류점까지 선선한 물바람런!",
+        memberCount: 2,
+        hasJoined: false,
+        isActiveTracking: false,
+        goalEditCount: 0,
+        goalCelebrated: false,
+        runners: [
+          { id: 'runner-g2-1', name: '정우성' },
+          { id: 'runner-g2-2', name: '한지민' }
+        ],
+        runs: [
+          { id: 'run-g2-1', runnerId: 'runner-g2-1', runnerName: '정우성', km: 15.0, date: '2026-07-01' },
+          { id: 'run-g2-2', runnerId: 'runner-g2-2', runnerName: '한지민', km: 5.4, date: '2026-07-02' }
+        ]
+      },
+      {
+        id: 'group-r3',
+        title: "푸른길 미라클 모닝클럽",
+        region: "남구",
+        targetKm: 800,
+        desc: "남구 주월동 푸른길 기차 레일 산책로에서 아침 6시 상쾌하게 기상런하는 미라클 러너 모임.",
+        memberCount: 2,
+        hasJoined: false,
+        isActiveTracking: false,
+        goalEditCount: 0,
+        goalCelebrated: false,
+        runners: [
+          { id: 'runner-g3-1', name: '최강현' },
+          { id: 'runner-g3-2', name: '임아름' }
+        ],
+        runs: [
+          { id: 'run-g3-1', runnerId: 'runner-g3-1', runnerName: '최강현', km: 9.2, date: '2026-07-02' },
+          { id: 'run-g3-2', runnerId: 'runner-g3-2', runnerName: '임아름', km: 7.1, date: '2026-07-03' }
+        ]
+      }
+    ];
+
+    let appState = {
+      themeMode: "dark",
+      gameOpportunities: 2,
+      lastPlayDate: "",
+      links: [
+        { id: 'link-1', title: '광주 평화의 소녀상 페이스 러닝 페스티벌 가이드', url: 'https://gwangju-marathon.co.kr', category: '러닝 대회 및 행사' },
+        { id: 'link-2', title: '초보자를 위한 관절 보호 러닝화 추천 가이드', url: 'https://runner-shoes-info.com', category: '장비 추천' }
+      ]
+    };
+
+    let groupsList = [];
+    let activeGroup = null; // 현재 추적 활성화된 그룹 객체 참조
+
+    let currentYear = 2026;
+    let currentMonth = 6; // 7월
+    let selectedDateStr = '2026-07-13';
+    let alertPromiseResolve = null;
+    let paceChartInstance = null;
+
+    // 대시보드 상태 로드
+    function loadAppState() {
+      const savedState = localStorage.getItem(STORAGE_KEY_STATE);
+      if (savedState) {
+        try {
+          appState = JSON.parse(savedState);
+        } catch(e) {}
+      } else {
+        saveAppState();
+      }
+
+      // 그룹 및 크루 데이터 로드
+      const savedGroups = localStorage.getItem(RECRUIT_GROUPS_KEY);
+      if (savedGroups) {
+        try {
+          groupsList = JSON.parse(savedGroups);
+        } catch(e) {
+          groupsList = JSON.parse(JSON.stringify(initialGroupsList));
+        }
+      } else {
+        groupsList = JSON.parse(JSON.stringify(initialGroupsList));
+        saveGroupsData();
+      }
+
+      // 활성화된 추적 크루 설정
+      activeGroup = groupsList.find(g => g.isActiveTracking === true);
+      if (!activeGroup && groupsList.length > 0) {
+        activeGroup = groupsList[0];
+        activeGroup.isActiveTracking = true;
+        saveGroupsData();
+      }
+    }
+
+    function saveAppState() {
+      localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(appState));
+    }
+
+    function saveGroupsData() {
+      localStorage.setItem(RECRUIT_GROUPS_KEY, JSON.stringify(groupsList));
+    }
+
+    // 테마 동기화
+    function initTheme() {
+      const body = document.getElementById('main-body');
+      const toggleCheckbox = document.getElementById('theme-toggle');
+      if (appState.themeMode === "light") {
+        body.classList.add('theme-light');
+        toggleCheckbox.checked = false;
+      } else {
+        body.classList.remove('theme-light');
+        toggleCheckbox.checked = true;
+      }
+    }
+
+    function toggleThemeMode() {
+      const body = document.getElementById('main-body');
+      const toggleCheckbox = document.getElementById('theme-toggle');
+      if (toggleCheckbox.checked) {
+        appState.themeMode = "dark";
+        body.classList.remove('theme-light');
+        showToast('다크 모드로 전환되었습니다.', 'success');
+      } else {
+        appState.themeMode = "light";
+        body.classList.add('theme-light');
+        showToast('라이트 모드로 전환되었습니다.', 'success');
+      }
+      saveAppState();
+      renderDashboard();
+    }
+
+    // [자체 커스텀 모달 알림]
+    function openCustomModal(title, msg, showCancel = false, isWarning = false) {
+      return new Promise((resolve) => {
+        alertPromiseResolve = resolve;
+        const modal = document.getElementById('custom-alert-modal');
+        const titleEl = document.getElementById('alert-title');
+        const msgEl = document.getElementById('alert-message');
+        const cancelBtn = document.getElementById('alert-cancel-btn');
+        const iconWrapper = document.getElementById('alert-icon-wrapper');
+        const icon = document.getElementById('alert-icon');
+
+        titleEl.innerText = title;
+        msgEl.innerText = msg;
+        if (showCancel) {
+          cancelBtn.classList.remove('hidden');
+        } else {
+          cancelBtn.classList.add('hidden');
+        }
+
+        if (isWarning) {
+          iconWrapper.className = "bg-amber-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-500/20 text-amber-400";
+          icon.className = "fa-solid fa-triangle-exclamation text-3xl";
+        } else {
+          iconWrapper.className = "bg-rose-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border border-rose-500/20 text-rose-400";
+          icon.className = "fa-solid fa-circle-exclamation text-3xl";
+        }
+        modal.classList.remove('hidden');
+      });
+    }
+
+    function closeAlertModal(confirmed) {
+      document.getElementById('custom-alert-modal').classList.add('hidden');
+      if (alertPromiseResolve) {
+        alertPromiseResolve(confirmed);
+        alertPromiseResolve = null;
+      }
+    }
+
+    // 토스트 알림
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toast-msg');
+      const toastIcon = document.getElementById('toast-icon');
+      const toastIconBg = document.getElementById('toast-icon-bg');
+
+      toastMsg.innerText = message;
+      if (type === 'success') {
+        toastIcon.className = "fa-solid fa-check";
+        toastIconBg.className = "bg-rose-500/10 p-1.5 rounded-lg border border-rose-500/20 text-rose-400";
+      } else {
+        toastIcon.className = "fa-solid fa-exclamation";
+        toastIconBg.className = "bg-amber-500/10 p-1.5 rounded-lg border border-amber-500/20 text-amber-400";
+      }
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3000);
+    }
+
+    // 목표 수정 설정 모달
+    function openGoalEditModal() {
+      if (!activeGroup) return;
+      document.getElementById('edit-group-name').value = activeGroup.title;
+      document.getElementById('edit-goal-km').value = activeGroup.targetKm;
+      const remaining = 2 - (activeGroup.goalEditCount || 0);
+      document.getElementById('edit-count-display').innerText = `수정 남은 횟수: ${remaining}회 / 2회`;
+      document.getElementById('goal-edit-modal').classList.remove('hidden');
+    }
+
+    function closeGoalEditModal() {
+      document.getElementById('goal-edit-modal').classList.add('hidden');
+    }
+
+    async function saveGoalSettings() {
+      if (!activeGroup) return;
+      const editName = document.getElementById('edit-group-name').value.trim();
+      const editGoal = parseInt(document.getElementById('edit-goal-km').value);
+
+      if (!editName || isNaN(editGoal) || editGoal <= 0) {
+        openCustomModal("입력 제한", "모든 항목을 올바르게 기입해주세요.", false, true);
+        return;
+      }
+
+      const isGoalChanged = (editGoal !== activeGroup.targetKm);
+      if (isGoalChanged) {
+        const remaining = 2 - (activeGroup.goalEditCount || 0);
+        if (remaining <= 0) {
+          openCustomModal("수정 횟수 초과", "목표 km 수정 기회가 소진되었습니다.", false, true);
+          return;
+        }
+        const confirmed = await openCustomModal(
+          "목표 수정 확인",
+          `목표치를 ${activeGroup.targetKm}km에서 ${editGoal}km로 변경하시겠습니까?`,
+          true,
+          false
+        );
+        if (!confirmed) return;
+        activeGroup.targetKm = editGoal;
+        activeGroup.goalEditCount = (activeGroup.goalEditCount || 0) + 1;
+        // 목표가 늘어났을 시 달성 축하 트리거 플래그 초기화
+        activeGroup.goalCelebrated = false;
+      }
+
+      activeGroup.title = editName;
+      saveGroupsData();
+      renderDashboard();
+      closeGoalEditModal();
+      showToast("크루 목표 및 정보가 성공적으로 반영되었습니다.", "success");
+    }
+
+    // 목표 달성 시 대형 폭죽 연출 가동
+    function triggerGoalCelebration(currentValue, targetValue) {
+      document.getElementById('celebration-km-display').innerText = `${currentValue.toLocaleString()} / ${targetValue.toLocaleString()} km`;
+      document.getElementById('celebration-modal').classList.remove('hidden');
+      
+      const duration = 4 * 1000;
+      const animationEnd = Date.now() + duration;
+      const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 1000 };
+
+      function randomInRange(min, max) {
+        return Math.random() * (max - min) + min;
+      }
+
+      const interval = setInterval(function() {
+        const timeLeft = animationEnd - Date.now();
+
+        if (timeLeft <= 0) {
+          return clearInterval(interval);
+        }
+
+        const particleCount = 50 * (timeLeft / duration);
+        // 화면 정중앙 부근에서 사방으로 흩뿌리는 축하 Confetti 구현
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+        confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+      }, 250);
+    }
+
+    function closeCelebrationModal() {
+      document.getElementById('celebration-modal').classList.add('hidden');
+    }
+
+    // 대시보드 렌더링
+    function renderDashboard() {
+      if (!activeGroup) {
+        document.getElementById('group-name-display').innerText = "활성 그룹 없음";
+        return;
+      }
+
+      const runners = activeGroup.runners || [];
+      const runs = activeGroup.runs || [];
+
+      const totalSum = runs.reduce((acc, cur) => acc + cur.km, 0);
+      const roundedTotal = Math.round(totalSum * 10) / 10;
+
+      // 텍스트 매핑
+      document.getElementById('group-name-display').innerText = activeGroup.title;
+      document.getElementById('current-km-display').innerText = `${roundedTotal.toLocaleString()} km`;
+      document.getElementById('donut-current-km').innerText = `${roundedTotal.toLocaleString()} / ${activeGroup.targetKm.toLocaleString()} km`;
+      document.getElementById('goal-target-display').innerText = `목표: ${activeGroup.targetKm.toLocaleString()} km`;
+      document.getElementById('goal-title-display').innerText = `공동 목표 ${activeGroup.targetKm.toLocaleString()} km 정복하기!`;
+
+      const remainingEdits = 2 - (activeGroup.goalEditCount || 0);
+      document.getElementById('badge-edit-count').innerText = `${remainingEdits}회 가능`;
+
+      const percent = activeGroup.targetKm > 0 ? Math.min(Math.round((roundedTotal / activeGroup.targetKm) * 100), 100) : 0;
+      document.getElementById('progress-percent').innerText = `${percent}%`;
+
+      // 목표 최초 도달 시 대형 팝업 및 폭죽 연출 연동
+      if (percent >= 100 && !activeGroup.goalCelebrated) {
+        activeGroup.goalCelebrated = true;
+        saveGroupsData();
+        setTimeout(() => {
+          triggerGoalCelebration(roundedTotal, activeGroup.targetKm);
+        }, 500);
+      } else if (percent < 100 && activeGroup.goalCelebrated) {
+        // 기록 취소나 감축으로 하락 시 플래그 안전 복구
+        activeGroup.goalCelebrated = false;
+        saveGroupsData();
+      }
+
+      // 도넛 차트
+      const circleElement = document.getElementById('progress-circle');
+      if (circleElement) {
+        const strokeDashoffset = 502.65 - (502.65 * percent) / 100;
+        circleElement.style.strokeDashoffset = strokeDashoffset;
+      }
+
+      // 모래시계 수위
+      const topSand = document.getElementById('sand-top');
+      const bottomSand = document.getElementById('sand-bottom');
+      const sandStream = document.getElementById('sand-stream');
+      if (topSand && bottomSand) {
+        topSand.style.height = `${100 - percent}%`;
+        bottomSand.style.height = `${percent}%`;
+        if (percent > 0 && percent < 100) {
+          sandStream.classList.remove('hidden');
+        } else {
+          sandStream.classList.add('hidden');
+        }
+      }
+
+      const trackIndicator = document.getElementById('track-indicator');
+      if (trackIndicator) trackIndicator.style.width = `${percent}%`;
+
+      // 명예의 전당 및 러너 셀렉트 렌더링
+      const runnersList = document.getElementById('runners-list');
+      const participantCount = document.getElementById('participant-count');
+      const runnerSelect = document.getElementById('record-runner-select');
+
+      runnersList.innerHTML = '';
+      runnerSelect.innerHTML = '';
+      participantCount.innerText = `${runners.length}명 달리는 중`;
+
+      const runnersWithStats = runners.map(runner => {
+        const runnerSum = runs
+          .filter(r => r.runnerId === runner.id)
+          .reduce((acc, cur) => acc + cur.km, 0);
+        return { ...runner, totalKm: Math.round(runnerSum * 10) / 10 };
+      });
+
+      const sortedRunners = runnersWithStats.sort((a, b) => b.totalKm - a.totalKm);
+      sortedRunners.forEach((runner, index) => {
+        let medalBadge = `<span class="text-xs text-slate-500 font-bold font-mono">#${index + 1}</span>`;
+        if (index === 0 && runner.totalKm > 0) medalBadge = `<span class="text-amber-400"><i class="fa-solid fa-crown"></i> 1st</span>`;
+        if (index === 1 && runner.totalKm > 0) medalBadge = `<span class="text-slate-300"><i class="fa-solid fa-medal"></i> 2nd</span>`;
+        if (index === 2 && runner.totalKm > 0) medalBadge = `<span class="text-amber-600"><i class="fa-solid fa-medal"></i> 3rd</span>`;
+
+        const themeCardClass = appState.themeMode === 'light' ? 'bg-white border-slate-200 shadow-sm' : 'bg-slate-950/40 border-slate-800/85 hover:border-slate-700';
+
+        const item = document.createElement('div');
+        item.className = `flex items-center justify-between border rounded-2xl p-3.5 transition duration-150 ${themeCardClass}`;
+        item.innerHTML = `
+          <div class="flex items-center gap-3">
+            <div class="flex items-center justify-center w-12 h-10 rounded-xl bg-slate-900 border border-slate-800 shrink-0">
+              ${medalBadge}
+            </div>
+            <div class="truncate">
+              <div class="font-bold text-sm text-slate-200 text-title-custom truncate">${runner.name}</div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 shrink-0">
+            <span class="font-mono font-black text-rose-400 text-sm">${runner.totalKm.toFixed(1)} km</span>
+            <button onclick="confirmRemoveRunner('${runner.id}')" class="text-slate-500 hover:text-rose-500 transition px-2 py-1 rounded hover:bg-rose-500/10">
+              <i class="fa-solid fa-user-minus text-xs"></i>
+            </button>
+          </div>
+        `;
+        runnersList.appendChild(item);
+
+        const option = document.createElement('option');
+        option.value = runner.id;
+        option.text = runner.name;
+        runnerSelect.appendChild(option);
+      });
+
+      renderCalendar();
+      renderSelectedDayLogs();
+      renderCumulativeChart();
+      updateGameOpportunitiesUI();
+    }
+
+    // 누적 페이스 그래프 (Chart.js)
+    function renderCumulativeChart() {
+      const ctx = document.getElementById('cumulative-pace-chart');
+      if (!ctx) return;
+      if (paceChartInstance) paceChartInstance.destroy();
+
+      const runners = activeGroup ? (activeGroup.runners || []) : [];
+      const runs = activeGroup ? (activeGroup.runs || []) : [];
+
+      const dates = [...new Set(runs.map(r => r.date))].sort();
+      if (dates.length === 0) {
+        dates.push(new Date().toISOString().split('T')[0]);
+      }
+
+      const runnerColors = ['#f43f5e', '#38bdf8', '#34d399', '#fbbf24', '#a78bfa', '#ec4899'];
+      const datasets = runners.map((runner, index) => {
+        const color = runnerColors[index % runnerColors.length];
+        const data = dates.map(date => {
+          const runsOnOrBefore = runs.filter(r => r.runnerId === runner.id && r.date <= date);
+          return Math.round(runsOnOrBefore.reduce((sum, r) => sum + r.km, 0) * 10) / 10;
+        });
+
+        return {
+          label: runner.name,
+          data: data,
+          borderColor: color,
+          backgroundColor: color + '10',
+          borderWidth: 3,
+          pointBackgroundColor: color,
+          pointRadius: 4,
+          tension: 0.3,
+          fill: true
+        };
+      });
+
+      const isLight = appState.themeMode === 'light';
+      paceChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: { labels: dates.map(d => d.slice(5)), datasets: datasets },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: isLight ? '#334155' : '#94a3b8' } }
+          },
+          scales: {
+            x: { grid: { color: isLight ? '#cbd5e1' : '#1e293b' }, ticks: { color: isLight ? '#334155' : '#94a3b8' } },
+            y: { 
+              min: 0, // [Y축 스케일 최저점 0 고정] 음수 영역 미도출 보장
+              grid: { color: isLight ? '#cbd5e1' : '#1e293b' }, 
+              ticks: { color: isLight ? '#334155' : '#94a3b8' } 
+            }
+          }
+        }
+      });
+    }
+
+    // 캘린더 드로잉
+    function renderCalendar() {
+      const daysGrid = document.getElementById('calendar-days-grid');
+      const currentViewLabel = document.getElementById('calendar-current-view');
+      const monthYearLabel = document.getElementById('calendar-month-year');
+      daysGrid.innerHTML = '';
+      
+      const monthNames = ["01", "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12"];
+      monthYearLabel.innerText = `${currentYear}.${monthNames[currentMonth]}`;
+      currentViewLabel.innerText = `${currentYear}년 ${currentMonth + 1}월`;
+
+      const firstDayIndex = new Date(currentYear, currentMonth, 1).getDay();
+      const lastDate = new Date(currentYear, currentMonth + 1, 0).getDate();
+      const prevLastDate = new Date(currentYear, currentMonth, 0).getDate();
+
+      const runs = activeGroup ? (activeGroup.runs || []) : [];
+
+      for (let i = firstDayIndex; i > 0; i--) {
+        const cell = document.createElement('div');
+        cell.className = "text-[10px] text-slate-500 p-2 text-center select-none bg-slate-950/20 rounded-lg";
+        cell.innerText = prevLastDate - i + 1;
+        daysGrid.appendChild(cell);
+      }
+
+      for (let day = 1; day <= lastDate; day++) {
+        const formattedMonth = String(currentMonth + 1).padStart(2, '0');
+        const formattedDay = String(day).padStart(2, '0');
+        const dateKey = `${currentYear}-${formattedMonth}-${formattedDay}`;
+
+        const dayKmSum = runs.filter(r => r.date === dateKey).reduce((acc, cur) => acc + cur.km, 0);
+        const cell = document.createElement('div');
+        cell.onclick = () => selectDate(dateKey);
+
+        const isSelected = selectedDateStr === dateKey;
+        let cellClass = `p-2 rounded-xl text-center cursor-pointer transition relative group flex flex-col items-center justify-between min-h-[50px] border `;
+        
+        if (isSelected) {
+          cellClass += " bg-rose-500/20 border-rose-500 text-rose-500 font-extrabold shadow-lg ";
+        } else {
+          cellClass += appState.themeMode === "light" 
+            ? " bg-white border-slate-200 hover:bg-slate-50 text-slate-600 " 
+            : " bg-slate-950/40 border-slate-900 hover:bg-slate-900/50 text-slate-300 ";
+        }
+
+        cell.className = cellClass;
+        cell.innerHTML = `
+          <span class="text-xs font-bold ${isSelected ? 'text-rose-500 font-black' : ''}">${day}</span>
+          ${dayKmSum > 0 ? `<span class="mt-1 text-[9px] font-black text-rose-500 bg-rose-500/10 px-1 rounded border border-rose-500/20">${dayKmSum.toFixed(1)}k</span>` : ''}
+        `;
+        daysGrid.appendChild(cell);
+      }
+    }
+
+    function selectDate(dateString) {
+      selectedDateStr = dateString;
+      document.getElementById('record-date-input').value = dateString;
+      renderCalendar();
+      renderSelectedDayLogs();
+    }
+
+    function renderSelectedDayLogs() {
+      const dateStrEl = document.getElementById('selected-date-str');
+      const dateSumEl = document.getElementById('selected-date-sum');
+      const runsContainer = document.getElementById('selected-date-runs');
+      if (!dateStrEl) return;
+      
+      dateStrEl.innerText = selectedDateStr;
+      const runs = activeGroup ? (activeGroup.runs || []) : [];
+      const dayRuns = runs.filter(r => r.date === selectedDateStr);
+      const totalSum = dayRuns.reduce((acc, cur) => acc + cur.km, 0);
+      
+      dateSumEl.innerText = `${totalSum.toFixed(1)} km`;
+      runsContainer.innerHTML = '';
+
+      if (dayRuns.length === 0) {
+        runsContainer.innerHTML = `<div class="text-slate-500 text-center py-2">기록이 없습니다. 달리기를 등록하세요!</div>`;
+        return;
+      }
+
+      dayRuns.forEach(run => {
+        const item = document.createElement('div');
+        item.className = "flex items-center justify-between bg-slate-950/40 p-2 rounded-lg border border-slate-900 inner-card-custom";
+        item.innerHTML = `
+          <div class="flex items-center gap-2">
+            <span class="text-rose-400 text-[10px]"><i class="fa-solid fa-person-running"></i></span>
+            <span class="font-bold text-slate-300 text-xs text-title-custom">${run.runnerName}</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <span class="font-mono font-bold text-slate-400 text-xs text-desc-custom">${run.km.toFixed(1)} km</span>
+            <button onclick="deleteRunLog('${run.id}')" class="text-slate-500 hover:text-rose-500 p-1">
+              <i class="fa-solid fa-trash-can text-[10px]"></i>
+            </button>
+          </div>
+        `;
+        runsContainer.appendChild(item);
+      });
+    }
+
+    function changeMonth(dir) {
+      currentMonth += dir;
+      if (currentMonth < 0) { currentMonth = 11; currentYear -= 1; }
+      else if (currentMonth > 11) { currentMonth = 0; currentYear += 1; }
+      renderCalendar();
+    }
+
+    // 러너 탈퇴/삭제
+    async function confirmRemoveRunner(id) {
+      if (!activeGroup) return;
+      const targetRunner = activeGroup.runners.find(r => r.id === id);
+      if (!targetRunner) return;
+      const confirmed = await openCustomModal("주자 제외", `'${targetRunner.name}'님을 제외할까요? 모든 기록이 삭제됩니다.`, true, true);
+      if (confirmed) {
+        activeGroup.runners = activeGroup.runners.filter(r => r.id !== id);
+        activeGroup.runs = activeGroup.runs.filter(r => r.runnerId !== id);
+        saveGroupsData();
+        renderDashboard();
+        showToast('러너가 안전하게 명단에서 제외되었습니다.', 'warning');
+      }
+    }
+
+    // 러너 추가
+    document.getElementById('add-runner-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      if (!activeGroup) return;
+      const nameInput = document.getElementById('runner-name');
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      activeGroup.runners.push({ id: 'runner-' + Date.now(), name: name });
+      saveGroupsData();
+      renderDashboard();
+      nameInput.value = '';
+      showToast(`'${name}' 러너가 크루에 합류했습니다!`, 'success');
+    });
+
+    // 러닝 삭제
+    function deleteRunLog(runId) {
+      if (!activeGroup) return;
+      activeGroup.runs = activeGroup.runs.filter(r => r.id !== runId);
+      saveGroupsData();
+      renderDashboard();
+      showToast('러닝 로그가 완전히 삭제되었습니다.', 'warning');
+    }
+
+    // 러닝 등록 (동일 주자의 동일 날짜 기록 합산 구현)
+    function addRunningRecord() {
+      if (!activeGroup) return;
+      const runnerId = document.getElementById('record-runner-select').value;
+      const kmInput = document.getElementById('record-km-input');
+      const dateInput = document.getElementById('record-date-input');
+      const km = parseFloat(kmInput.value);
+      const date = dateInput.value;
+
+      if (!runnerId) { openCustomModal("오류", "먼저 러너를 기입하여 등록해 주세요.", false, true); return; }
+      if (!date) { openCustomModal("오류", "러닝 일자를 명시해 주세요.", false, true); return; }
+      if (isNaN(km) || km <= 0) { openCustomModal("오류", "올바른 거리를 입력해 주세요.", false, true); return; }
+
+      const runner = activeGroup.runners.find(r => r.id === runnerId);
+      if (!runner) return;
+
+      if (!activeGroup.runs) activeGroup.runs = [];
+
+      // [기록 합산 처리] 동일 인물이 동일 날짜에 기등록한 기록이 있는지 검사
+      const existingRunIndex = activeGroup.runs.findIndex(r => r.runnerId === runner.id && r.date === date);
+
+      if (existingRunIndex !== -1) {
+        // 이미 당일 기록이 있을 경우 값을 더하고 가공하여 보존
+        const mergedKm = Math.round((activeGroup.runs[existingRunIndex].km + km) * 10) / 10;
+        activeGroup.runs[existingRunIndex].km = mergedKm;
+        showToast(`${runner.name}님의 ${date} 기록에 ${km} km가 정상 추가 합산되었습니다!`, 'success');
+      } else {
+        // 당일 기록이 없는 신규 날짜 등록인 경우 새로 생성
+        activeGroup.runs.push({ 
+          id: 'run-' + Date.now(), 
+          runnerId: runner.id, 
+          runnerName: runner.name, 
+          km: Math.round(km * 10) / 10, 
+          date: date 
+        });
+        showToast(`${runner.name}님의 달리기가 등록되어 게이지가 채워졌습니다!`, 'success');
+      }
+
+      saveGroupsData();
+      renderDashboard();
+      kmInput.value = '';
+    }
+
+    // 데이터 초기화
+    async function confirmResetData() {
+      const confirmed = await openCustomModal("초기화 경고", "현재 플랫폼의 모든 데이터가 전면 포맷됩니다. 계속할까요?", true, true);
+      if (confirmed) {
+        localStorage.removeItem(STORAGE_KEY_STATE);
+        localStorage.removeItem(RECRUIT_GROUPS_KEY);
+        loadAppState();
+        renderDashboard();
+        showToast('대시보드 데이터가 전면 초기화되었습니다.', 'success');
+      }
+    }
+
+    // AI 링크 스토어
+    function openLinkModal() {
+      document.getElementById('link-modal').classList.remove('hidden');
+      renderLinkDirectory();
+    }
+
+    function closeLinkModal() {
+      document.getElementById('link-modal').classList.add('hidden');
+    }
+
+    async function classifyCategoryByAI(title) {
+      const lowercaseTitle = title.toLowerCase();
+      const promptMap = [
+        { category: '장비 추천', keywords: ['신발', '러닝화', '웨어', '시계', '가민', '나이키', '아디다스', '호카'] },
+        { category: '광주 추천 코스', keywords: ['무등산', '광주천', '풍암', '쌍암', '용봉', '상무', '수완', '광산', '서구', '동구', '북구', '남구'] },
+        { category: '러닝 대회 및 행사', keywords: ['대회', '마라톤', '일정', '접수', '참가'] }
+      ];
+      await new Promise(resolve => setTimeout(resolve, 600));
+      for (const item of promptMap) {
+        for (const keyword of item.keywords) {
+          if (lowercaseTitle.includes(keyword)) return item.category;
+        }
+      }
+      return '러닝 유용 정보';
+    }
+
+    async function saveLinkWithAI() {
+      const titleInput = document.getElementById('new-link-title');
+      const urlInput = document.getElementById('new-link-url');
+      const aiBtn = document.getElementById('ai-save-btn');
+      const title = titleInput.value.trim();
+      const url = urlInput.value.trim();
+
+      if (!title || !url) { openCustomModal("오류", "제목과 URL 주소를 명기하세요.", false, true); return; }
+      aiBtn.disabled = true;
+      aiBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> 가공 중...`;
+
+      try {
+        const category = await classifyCategoryByAI(title);
+        appState.links.push({ id: 'link-' + Date.now(), title, url, category });
+        saveAppState();
+        renderLinkDirectory();
+        titleInput.value = ''; urlInput.value = '';
+        showToast(`AI 자동 분류 완료: [${category}]에 보관되었습니다.`, 'success');
+      } catch (err) {
+        showToast('오류가 발생했습니다.', 'error');
+      } finally {
+        aiBtn.disabled = false;
+        aiBtn.innerHTML = `<i class="fa-solid fa-wand-magic-sparkles"></i> AI 분류 저장`;
+      }
+    }
+
+    function deleteLinkWithEffect(linkId, elementId) {
+      const targetElement = document.getElementById(elementId);
+      if (!targetElement) return;
+      targetElement.classList.add('crumple-active');
+      setTimeout(() => {
+        appState.links = appState.links.filter(l => l.id !== linkId);
+        saveAppState();
+        renderLinkDirectory();
+        showToast('유용 링크가 분쇄 폐기되었습니다.', 'success');
+      }, 750);
+    }
+
+    function renderLinkDirectory() {
+      const container = document.getElementById('directory-container');
+      container.innerHTML = '';
+      if (!appState.links || appState.links.length === 0) {
+        container.innerHTML = `<div class="text-center py-8 text-slate-500 text-sm">기입된 정보 링크가 존재하지 않습니다.</div>`;
+        return;
+      }
+      const categories = {};
+      appState.links.forEach(link => {
+        if (!categories[link.category]) categories[link.category] = [];
+        categories[link.category].push(link);
+      });
+
+      Object.keys(categories).forEach((catName, dirIndex) => {
+        const dirBlock = document.createElement('div');
+        dirBlock.className = "bg-slate-950/60 rounded-2xl border border-slate-850 p-4 space-y-3 inner-card-custom";
+        dirBlock.innerHTML = `
+          <div class="flex items-center gap-2 border-b border-slate-900 pb-2 mb-2">
+            <span class="text-amber-500 text-sm"><i class="fa-solid fa-folder"></i></span>
+            <span class="text-sm font-bold text-slate-300 text-title-custom">${catName}</span>
+          </div>
+          <div class="space-y-2" id="dir-links-${dirIndex}"></div>
+        `;
+        container.appendChild(dirBlock);
+        const linksWrapper = document.getElementById(`dir-links-${dirIndex}`);
+        categories[catName].forEach((link) => {
+          const uniqueElId = `link-item-${link.id}`;
+          const linkRow = document.createElement('div');
+          linkRow.id = uniqueElId;
+          linkRow.className = "flex items-center justify-between bg-slate-900/80 border border-slate-850 rounded-xl px-4 py-3 hover:border-slate-700 transition inner-card-custom";
+          linkRow.innerHTML = `
+            <div class="truncate mr-2">
+              <a href="${link.url}" target="_blank" class="text-sm font-semibold text-slate-200 hover:text-blue-400 hover:underline truncate block text-title-custom">${link.title}</a>
+              <span class="text-[10px] text-slate-500 font-mono block truncate">${link.url}</span>
+            </div>
+            <button onclick="deleteLinkWithEffect('${link.id}', '${uniqueElId}')" class="text-slate-500 hover:text-rose-500 p-1">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          `;
+          linksWrapper.appendChild(linkRow);
+        });
+      });
+    }
+
+    // 미니 게임
+    function checkAndResetOpportunities() {
+      const todayString = new Date().toDateString();
+      if (appState.lastPlayDate !== todayString) {
+        appState.gameOpportunities = 2;
+        appState.lastPlayDate = todayString;
+        saveAppState();
+      }
+    }
+
+    function updateGameOpportunitiesUI() {
+      checkAndResetOpportunities();
+      const chances = appState.gameOpportunities;
+      document.getElementById('game-chances-display').innerText = chances;
+      const overlay = document.getElementById('game-start-overlay');
+      const startBtn = document.getElementById('start-game-btn');
+      const timerBox = document.getElementById('countdown-timer-box');
+      const overlayTitle = document.getElementById('overlay-title');
+      const overlayDesc = document.getElementById('overlay-desc');
+
+      if (chances > 0) {
+        startBtn.classList.remove('hidden');
+        timerBox.classList.add('hidden');
+        overlayTitle.innerText = "런런런! 광주천 트랙 서바이벌";
+        overlayDesc.innerHTML = `현재 플레이 기회가 <strong>${chances}회</strong> 남아있습니다.<br>날아다니는 새 🦅와 불꽃 🔥 장애물을 피하고 최고 기록에 도전해 보세요!`;
+      } else {
+        startBtn.classList.add('hidden');
+        timerBox.classList.remove('hidden');
+        overlayTitle.innerText = "오늘의 도전 한도 소진!";
+        overlayDesc.innerHTML = "하루에 2번 참여하실 수 있는 미니게임 기회가 종료되었습니다.";
+        startCountdownTimer();
+      }
+    }
+
+    let countdownInterval = null;
+    function startCountdownTimer() {
+      if (countdownInterval) clearInterval(countdownInterval);
+      function updateTimer() {
+        const now = new Date();
+        const endOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59, 999);
+        const timeDiff = endOfDay - now;
+        if (timeDiff <= 0) {
+          clearInterval(countdownInterval);
+          checkAndResetOpportunities();
+          updateGameOpportunitiesUI();
+          return;
+        }
+        const hours = Math.floor(timeDiff / 3600000);
+        const minutes = Math.floor((timeDiff % 3600000) / 60000);
+        const seconds = Math.floor((timeDiff % 60000) / 1000);
+        document.getElementById('countdown-timer').innerText = 
+          `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+      updateTimer();
+      countdownInterval = setInterval(updateTimer, 1000);
+    }
+
+    async function requestStartGame() {
+      checkAndResetOpportunities();
+      if (appState.gameOpportunities <= 0) {
+        openCustomModal("오류", "오늘의 모든 서바이벌 도전 횟수를 사용하셨습니다.", false, true);
+        return;
+      }
+      appState.gameOpportunities--;
+      appState.lastPlayDate = new Date().toDateString();
+      saveAppState();
+      updateGameOpportunitiesUI();
+      document.getElementById('game-start-overlay').classList.add('hidden');
+      initAndLaunchGame();
+    }
+
+    let gameScore = 0; let gameSpeed = 6; let playerJump = false; let ducking = false;
+    let gameActive = false; let obstacleTimer = null; let collisionCheckTimer = null;
+    let spawnedObstacles = [];
+    const player = document.getElementById('game-player');
+    const gameContainer = document.getElementById('runner-game');
+
+    function initAndLaunchGame() {
+      gameScore = 0; gameSpeed = 6; playerJump = false; ducking = false; gameActive = true; spawnedObstacles = [];
+      document.getElementById('game-score').innerText = "SCORE 0";
+      document.getElementById('game-speed').innerText = "SPEED 6";
+      gameContainer.querySelectorAll('.obstacle-bird, .obstacle-fire').forEach(o => o.remove());
+      player.style.bottom = "45px";
+      gameContainer.classList.remove('ducking');
+      setupTouchControls();
+      startObstacleSpawner();
+      startCollisionEngine();
+    }
+
+    function jump() {
+      if (playerJump || !gameActive || ducking) return;
+      playerJump = true;
+      player.style.bottom = "190px";
+      setTimeout(() => { if (!gameActive) return; player.style.bottom = "45px"; playerJump = false; }, 550);
+    }
+
+    function duck(start) {
+      if (!gameActive) return;
+      ducking = start;
+      if (start) {
+        if (playerJump) return;
+        gameContainer.classList.add('ducking');
+      } else {
+        gameContainer.classList.remove('ducking');
+      }
+    }
+
+    document.addEventListener('keydown', e => {
+      if (!gameActive) return;
+      if (e.code === "Space") { e.preventDefault(); jump(); }
+      if (e.code === "ArrowDown") { e.preventDefault(); duck(true); }
+    });
+    document.addEventListener('keyup', e => { if (e.code === "ArrowDown") duck(false); });
+
+    function setupTouchControls() {
+      const jBtn = document.getElementById('mobile-jump-btn');
+      const dBtn = document.getElementById('mobile-duck-btn');
+      jBtn.onmousedown = jBtn.ontouchstart = (e) => { e.preventDefault(); jump(); };
+      dBtn.onmousedown = dBtn.ontouchstart = (e) => { e.preventDefault(); duck(true); };
+      dBtn.onmouseup = dBtn.ontouchend = (e) => { e.preventDefault(); duck(false); };
+    }
+
+    function startObstacleSpawner() {
+      if (obstacleTimer) clearInterval(obstacleTimer);
+      obstacleTimer = setInterval(() => {
+        if (!gameActive) return;
+        const obs = document.createElement('div');
+        const isBird = Math.random() > 0.5;
+        if (isBird) {
+          obs.className = "obstacle-bird";
+          obs.innerHTML = `<div class="bird-wing-left"></div><div class="bird-wing-right"></div><div class="bird-body"></div>`;
+        } else {
+          obs.className = "obstacle-fire";
+          obs.innerHTML = `<div class="fire-core"></div><div class="fire-inner"></div>`;
+        }
+        gameContainer.appendChild(obs);
+        let positionX = 800;
+        const moveTimer = setInterval(() => {
+          if (!gameActive) { clearInterval(moveTimer); return; }
+          positionX -= gameSpeed;
+          obs.style.right = (800 - positionX) + "px";
+          if (positionX < -100) {
+            obs.remove();
+            clearInterval(moveTimer);
+            spawnedObstacles = spawnedObstacles.filter(o => o.element !== obs);
+            gameScore += 10;
+            if (gameScore >= 100 && gameScore < 300) gameSpeed = 8;
+            if (gameScore >= 300 && gameScore < 500) gameSpeed = 10;
+            if (gameScore >= 500) gameSpeed = 13;
+            document.getElementById('game-score').innerText = "SCORE " + gameScore;
+            document.getElementById('game-speed').innerText = "SPEED " + gameSpeed;
+          }
+        }, 20);
+        spawnedObstacles.push({ element: obs, isBird, getX: () => positionX });
+      }, 1800);
+    }
+
+    function startCollisionEngine() {
+      if (collisionCheckTimer) clearInterval(collisionCheckTimer);
+      collisionCheckTimer = setInterval(() => {
+        if (!gameActive) return;
+        const pRect = player.getBoundingClientRect();
+        spawnedObstacles.forEach(obs => {
+          const oRect = obs.element.getBoundingClientRect();
+          if (pRect.left < oRect.right - 10 && pRect.right > oRect.left + 10 && pRect.top < oRect.bottom - 5 && pRect.bottom > oRect.top + 5) {
+            stopGameAndShowOver();
+          }
+        });
+      }, 30);
+    }
+
+    async function stopGameAndShowOver() {
+      gameActive = false;
+      clearInterval(obstacleTimer);
+      clearInterval(collisionCheckTimer);
+      gameContainer.querySelectorAll('.obstacle-bird, .obstacle-fire').forEach(o => o.style.animationPlayState = 'paused');
+      await openCustomModal("서바이벌 탈락 💥", `충돌로 게임이 오버되었습니다!\n최종 스코어: ${gameScore} 점`, false, false);
+      document.getElementById('game-start-overlay').classList.remove('hidden');
+      updateGameOpportunitiesUI();
+    }
+
+    window.onload = function() {
+      loadAppState();
+      initTheme();
+
+      const today = new Date();
+      currentYear = today.getFullYear();
+      currentMonth = today.getMonth();
+      const formattedMonth = String(currentMonth + 1).padStart(2, '0');
+      const formattedDay = String(today.getDate()).padStart(2, '0');
+      selectedDateStr = `${currentYear}-${formattedMonth}-${formattedDay}`;
+      
+      const recordDateInput = document.getElementById('record-date-input');
+      if (recordDateInput) recordDateInput.value = selectedDateStr;
+
+      renderDashboard();
+    };
+  </script>
+</body>
+</html>
